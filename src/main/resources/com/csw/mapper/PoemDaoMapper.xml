@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.csw.dao.PoemDao">
+
+    <resultMap type="Poem" id="xx">
+        <id column="pid" property="id"/>
+        <result column="pname" property="name"/>
+        <result column="pauthor" property="author"/>
+        <result column="ptype" property="type"/>
+        <result column="pcontent" property="content"/>
+        <result column="phref" property="href"/>
+        <result column="pauthordes" property="authordes"/>
+        <result column="porigin" property="origin"/>
+
+        <association property="category" javaType="Category">
+            <id column="cid" property="id"/>
+            <result column="cname" property="name"/>
+        </association>
+
+
+    </resultMap>
+
+    <!--查询所有-->
+    <select id="findAll" resultMap="xx">
+       select p.id as pid,p.name as pname,p.author as pauthor,p.type as ptype,
+       p.content as pcontent,
+		 p.href as phref,p.authordes as pauthordes,p.origin as porigin,
+		 c.id as cid,c.name as cname
+		 from t_poem  p left join t_category c on p.categoryId=c.id
+    </select>
+    <select id="findAll2" resultType="Poem">
+    select * from t_poem
+    </select>
+    <!--添加-->
+    <insert id="save1" parameterType="Poem">
+        insert into t_poem values(#{id},#{name},#{author},#{type},#{content},#{href},#{authordes},#{origin},#{category.id,jdbcType=VARCHAR})
+    </insert>
+
+    <!--删除-->
+    <delete id="delete" parameterType="String">
+        delete from t_poem where id=#{id}
+    </delete>
+
+    <!--修改-->
+    <update id="update" parameterType="Poem">
+        update t_poem set name=#{name},author=#{author},type=#{type},content=#{content},authordes=#{authordes},origin=#{origin},categoryId=#{category.id} where id=#{id}
+    </update>
+
+    <!--查询总条数-->
+    <select id="findTotalCounts" resultType="Long">
+       select count(p.id)
+		 from t_poem p left join t_category c on p.categoryId=c.id
+    </select>
+
+
+    <!--分页查询-->
+    <select id="findByPage" resultMap="xx">
+      select p.id as pid,p.name as pname,p.author as pauthor,p.type as ptype,
+       p.content as pcontent,
+		 p.href as phref,p.authordes as pauthordes,p.origin as porigin,
+		 c.id as cid,c.name as cname
+		 from (select * from t_poem  limit #{start},#{rows})
+		   p left join t_category c on p.categoryId=c.id
+
+    </select>
+
+    <select id="findSearch" resultMap="xx">
+        select p.id as pid,p.name as pname,p.author as pauthor,p.type as ptype,
+        p.content as pcontent,
+        p.href as phref,p.authordes as pauthordes,p.origin as porigin,
+        c.id as cid,c.name as cname
+       from (select * from t_poem limit #{start},#{rows})
+        p left join t_category c on p.categoryId=c.id
+      where
+        <if test="searchOper=='eq'">
+            ${searchField} = #{searchString}
+        </if>
+        <if test="searchOper=='ne'">
+            ${searchField} != #{searchString}
+        </if>
+        <if test="searchOper=='cn'">
+            ${searchField} like concat('%',#{searchString},'%')
+        </if>
+        limit #{start},#{rows}
+
+    </select>
+
+    <select id="findTotalCountsSearch" resultType="Long">
+        select count(p.id)
+        from t_poem p left join t_category c on p.categoryId=c.id
+        where
+        <if test="searchOper=='eq'">
+            ${searchField} = #{searchString}
+        </if>
+        <if test="searchOper=='ne'">
+            ${searchField} != #{searchString}
+        </if>
+        <if test="searchOper=='cn'">
+            ${searchField} like concat('%',#{searchString},'%')
+        </if>
+
+    </select>
+
+</mapper>
